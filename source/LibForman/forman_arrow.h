@@ -85,18 +85,10 @@ enum Arrows {
 
     , CONTAINS_F012	= E01_F012 | E02_F012 | E12_F012
 };
-//Vertex Case
-//assegniamo un valore alla freccia che parte da un vertice e punta ad un altro vertice.
-//tolto l'indice del vertice (nel tetraedro [0,3]) in esame i prendiamo gli altri tre indici (j,k,m) con (j > k > m)
-//arrow indica se il vettore punta a j, k, m o è critico (quindi niente vettore)
-
-//Face Case
-//assegniamo un valore alla freccia che parte da un edge e punta alla faccia.
-//la codifica avviene prendendo i tre indici dei vertici sulla faccia (j,k,m) con (j > k > m)
-//arrow indica se il vettore punta nella faccia in direzione di j,k,m o se la faccia è critica
 
 
 
+//Compact encoding of the Forman gradient for each triangle
 class TriGradient{
 
 private:
@@ -124,10 +116,10 @@ public:
     }
 
     // flag is one of the named entities of the enum
-    inline bool testArrow(Arrows flag )	const	{  return  (Arrows)(arrow & flag) != ARROWS_EMPTY; }		//  return 0 if flag is not set and 1 if flag is set
-    inline void setArrow(Arrows flag )  		{  arrow = (Arrows)(arrow | flag); }  							//  sets bit in position corresponding to flag
-    inline void toggleArrow(Arrows flag )		{  arrow = (Arrows)( arrow & flag); }								//  toggles bit in position corresponding to flag
-    inline void clearArrow( Arrows flag )  		{  arrow = (Arrows)( arrow & ~flag);; }  							//  clears bit in position corresponding to flag
+    inline bool testArrow(Arrows flag )	const	{  return  (Arrows)(arrow & flag) != ARROWS_EMPTY; }	//  return 0 if flag is not set and 1 if flag is set
+    inline void setArrow(Arrows flag )  		{  arrow = (Arrows)(arrow | flag); }                    //  sets bit in position corresponding to flag
+    inline void toggleArrow(Arrows flag )		{  arrow = (Arrows)( arrow & flag); }					//  toggles bit in position corresponding to flag
+    inline void clearArrow( Arrows flag )  		{  arrow = (Arrows)( arrow & ~flag);; }  				//  clears bit in position corresponding to flag
 
 
     inline void erase_edge_relation(short int v1, short int v2){

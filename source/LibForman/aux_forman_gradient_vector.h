@@ -14,9 +14,7 @@ typedef set<pair<vector<int>,int> > simplices_label_set;
 typedef map<int,simplices_label_set > leaf_cells_map;
 
 
-//questa struct permette di memorizzare in una sola lista tutti i simplessi
-//con un overhead (posizioni dell'array inutilizzate) che varia a seconda del tipo di simplesso memorizzato
-//il tipo di simplesso si ottiene gratis dal numero di posizioni utilizzate
+//explicit encoding of an i-simplex
 struct simplex
 {
     vector<int> simpl_id;
@@ -42,6 +40,7 @@ struct simplex
 
 };
 
+//gradient representation used during construction
 struct ExplicitGradient
 {
     simplices_map vertices_vector;

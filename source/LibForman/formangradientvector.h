@@ -299,13 +299,12 @@ private:
     }
 
     ///Functions for computing a Forman gradient starting from a watershed segmentation
+    /// paper Comic et al. Computer & Graphics 2016.
     void vertexEdgePairings(vector<int> const& segmentation);
     void vertexEdgePairingsPlateau(vector<int> const& vertexLabels);
     void edgeTrianglePairings(vector<int> const& vertexLabels, int);
     void boundaryPairings(vector<int> const& vertexLabels);
     void removeTerrainBoundaryPathsFast(vector<bool> const& isMaximum);
-
-    void edgeTriangleFast(vector<int> const& vertexLabels);
 
     int pick_a_minimum(set<int> const&);
     int pick_best_maximum(int i);

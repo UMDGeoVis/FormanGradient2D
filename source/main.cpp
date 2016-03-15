@@ -1,11 +1,9 @@
 #include "./WatershedAlgs/simulatedimmersion.h"
-
 #include "./LibForman/formangradientvector.h"
 
 using namespace std;
 
 void readInput(int argc, char** argv);
-void changeMeshBorder(Mesh& mesh);
 
 string meshFile("none");
 string fieldFile("none");
@@ -21,8 +19,6 @@ int main(int argc, char* argv[])
     Mesh mesh = Mesh();
 
     readInput(argc, argv);
-
-
     if(meshFile.find(".tri") != string::npos)
         Reader::readMeshFile(mesh,meshFile);
     else if(meshFile.find(".off") != string::npos)
@@ -34,21 +30,22 @@ int main(int argc, char* argv[])
         cout << "[Invalid input file] - supported formats: .off .tri .vtk" << endl;
         return 0;
     }
-    mesh.build();
+
+    mesh.build(); //build the mesh structure
     cout << "Mesh with " << mesh.getNumVertex() << " vertices and " << mesh.getTopSimplexesNum() << "triangles [LOADED]" << endl;
 
     if(fieldFile != "none"){
         Reader::readScalarField(mesh,fieldFile);
     }
 
-
     FormanGradientVector gradient = FormanGradientVector(&mesh);
-
     vector<int> segm;
     if(segmFile == "immersion"){
         time.start();
+        //compute the watershed segmentation with a simulated immersion approach
         int nRegions = simulatedImmersionSegmentation(mesh,true,segm);
         cout << "Segmentation by Simulated immersion computed. " << endl;
+        //compute the Forman gradient using the watershe segmentation
         gradient.watershedToForman(segm);
     }
     else if(segmFile == "exp"){
@@ -65,17 +62,18 @@ int main(int argc, char* argv[])
             }
         }
         time.start();
+        //compute the Forman gradient via homotopty expansion
         gradient.homotopy_expansion();
 
     }
     else{
-
         assert(fieldFile == "none");
         cout << "Select a method for computing the Forman gradient. " << endl;
         cout << "   [immersion] Forman gradient combined with the watershed segmentaiton " << endl;
         cout << "   [exp] Forman gradient computed by homotopy expansion " << endl;
         return 1;
     }
+
 
     time.stop();
     cout << endl;
@@ -85,25 +83,25 @@ int main(int argc, char* argv[])
     int numC = cp[0] + cp[1] + cp[2];
     cout << "Critical Points found (min sad max)" << cp[0] << " " << cp[1] << " " << cp[2] << " SUM: "<< numC << endl << endl;
 
-///Uncomment for printing vtk files for the Forman gradient and the critical points
-//    cout << "Writing Forman gradient on file: " << endl;
-//    gradient.writeVTK_gradient("gradient.vtk");
-//    cout << "- gradient.vtk" << endl;
-//    gradient.writeVTK_criticalPoints("criticalPoints.vtk");
-//    cout << "- criticalPoints.vtk" << endl << endl;
+/////Uncomment for printing vtk files for the Forman gradient and the critical points
+    cout << "Writing Forman gradient on file: " << endl;
+    gradient.writeVTK_gradient("gradient.vtk");
+    cout << "- gradient.vtk" << endl;
+    gradient.writeVTK_criticalPoints("criticalPoints.vtk");
+    cout << "- criticalPoints.vtk" << endl << endl;
 
-///Uncomment for printing vtk files with the Descending Morse complex
-//    cout << "Writing Morse features on file: " << endl;
-//    gradient.descending_2cells_extraction(true);
-//    cout << "- descending2cells.vtk" << endl;
-//    gradient.descending_1cells_extraction(true);
-//    cout << "- descending1cells.vtk" << endl;
+/////Uncomment for printing vtk files with the Descending Morse complex
+    cout << "Writing Morse features on file: " << endl;
+    gradient.descending_2cells_extraction(true);
+    cout << "- descending2cells.vtk" << endl;
+    gradient.descending_1cells_extraction(true);
+    cout << "- descending1cells.vtk" << endl;
 
-///Uncomment for printing vtk files with the Ascending Morse complex
-//    gradient.ascending_2cells_extraction(true);
-//    cout << "- ascending2cells.vtk" << endl;
-//    gradient.ascending_1cells_extraction(true);
-//    cout << "- ascending1cells.vtk" << endl;
+/////Uncomment for printing vtk files with the Ascending Morse complex
+    gradient.ascending_2cells_extraction(true);
+    cout << "- ascending2cells.vtk" << endl;
+    gradient.ascending_1cells_extraction(true);
+    cout << "- ascending1cells.vtk" << endl;
 
     return 0;
 }
@@ -129,63 +127,9 @@ void readInput(int argc, char** argv){
 
         segmFile = string(argv[par]);
         cout << "Segmentation method: " << segmFile << endl;
-        assert(segmFile == "rain" || segmFile == "immersion" || segmFile == "exp" || segmFile == "filter");
+        assert(segmFile == "immersion" || segmFile == "exp" || segmFile == "filter");
     }
     cout << endl;
 }
 
-void changeMeshBorder(Mesh& mesh){
 
-    vector<float> nValues(mesh.getNumVertex(),0);
-    for(int i=0; i<mesh.getNumVertex(); i++){
-        nValues[i]=mesh.getVertex(i).getF();
-
-        if(mesh.isBoundary(i)){
-            vector<int> vv = mesh.VV(i);
-            int highest = -1;
-            for(auto v : vv){
-                if((highest == -1 || mesh.getVertex(highest).getF() <= mesh.getVertex(v).getF()) && !mesh.isBoundary(v)){
-                    highest=v;
-                }
-            }
-
-            if(highest != -1 && mesh.getVertex(highest).getF() <= mesh.getVertex(i).getF()){
-                nValues[i]=(2*mesh.getVertex(highest).getF())-mesh.getVertex(i).getF();
-            }
-
-        }
-    }
-
-    for(int i=0; i<mesh.getNumVertex(); i++){
-        mesh.getVertex(i).setF(nValues[i]);
-    }
-
-    for(int i=0; i<mesh.getNumVertex(); i++){
-        nValues[i]=mesh.getVertex(i).getF();
-
-        if(mesh.isBoundary(i)){
-            vector<int> vv = mesh.VV(i);
-            int highest = -1;
-            for(auto v : vv){
-                if((highest == -1 || mesh.getVertex(highest).getF() <= mesh.getVertex(v).getF()) && !mesh.isBoundary(v)){
-                    highest=v;
-                }
-            }
-
-            if(highest == -1){
-                for(auto v : vv){
-                    if((highest == -1 || mesh.getVertex(highest).getF() <= mesh.getVertex(v).getF()) ){
-                        highest=v;
-                    }
-                }
-                nValues[i]=(2*mesh.getVertex(highest).getF())-mesh.getVertex(i).getF();
-            }
-
-        }
-    }
-
-    for(int i=0; i<mesh.getNumVertex(); i++){
-        mesh.getVertex(i).setF(nValues[i]);
-    }
-
-}
