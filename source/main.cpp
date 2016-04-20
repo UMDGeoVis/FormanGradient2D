@@ -44,13 +44,13 @@ int main(int argc, char* argv[])
         time.start();
         //compute the watershed segmentation with a simulated immersion approach
         int nRegions = simulatedImmersionSegmentation(mesh,true,segm);
-        cout << "Segmentation by Simulated immersion computed. " << endl;
+        cout << "Segmentation by Simulated immersion computed. " << nRegions << endl;
         //compute the Forman gradient using the watershe segmentation
         gradient.watershedToForman(segm);
     }
     else if(segmFile == "exp"){
         //Greedy discrimination of flat regions
-        map<float, vector<int> > vert;
+        map<double, vector<int> > vert;
         for(int i=0; i<mesh.getNumVertex(); i++){
             vert[mesh.getVertex(i).getF()].push_back(i);
         }
@@ -66,11 +66,74 @@ int main(int argc, char* argv[])
         gradient.homotopy_expansion();
 
     }
+    else if(segmFile == "exp-improved"){
+        //Improved simulation of simplicity
+
+        priority_queue<pair<int,float>, vector<pair<int,float> >, Comparer> simpleOrder;
+        priority_queue<pair<int,float>, vector<pair<int,float> >, Comparer> bfsOrder;
+
+        int count=0;
+        vector<int> newF(mesh.getNumVertex(),-1);
+
+        for(int i=0; i<mesh.getNumVertex(); i++)
+            simpleOrder.push(pair<int,double>(i,mesh.getVertex(i).getF()));
+
+        while(!simpleOrder.empty()){
+
+            if(bfsOrder.empty() || bfsOrder.top().second > simpleOrder.top().second){
+
+                int vertex = simpleOrder.top().first;
+                simpleOrder.pop();
+
+                if(newF[vertex]!=-1)
+                    continue;
+
+                newF[vertex]=count++;
+
+                vector<int> vv = mesh.VV(vertex);
+                for(auto adj : vv){
+                    if(newF[adj]==-1){
+                        bfsOrder.push(pair<int,double>(adj,mesh.getVertex(adj).getF()));
+                    }
+                }
+            }
+
+            else {
+
+                int vertex = bfsOrder.top().first;
+                bfsOrder.pop();
+
+                if(newF[vertex]!=-1)
+                    continue;
+
+                newF[vertex]=count++;
+
+                vector<int> vv = mesh.VV(vertex);
+                for(auto adj : vv){
+                    if(newF[adj]==-1){
+                        bfsOrder.push(pair<int,double>(adj,mesh.getVertex(adj).getF()));
+                    }
+                }
+            }
+        }
+
+
+        for(int i=0; i<newF.size(); i++){
+            assert(newF[i] != -1);
+            mesh.getVertex(i).setF(newF[i]);
+        }
+
+        time.start();
+        //compute the Forman gradient via homotopty expansion
+        gradient.homotopy_expansion();
+
+    }
     else{
         assert(fieldFile == "none");
         cout << "Select a method for computing the Forman gradient. " << endl;
         cout << "   [immersion] Forman gradient combined with the watershed segmentaiton " << endl;
-        cout << "   [exp] Forman gradient computed by homotopy expansion " << endl;
+        cout << "   [exp] simulation of simplicity + homotopy expansion " << endl;
+        cout << "   [exp-improved] improved simulation of simplicity + homotopy expansion " << endl;
         return 1;
     }
 
@@ -84,24 +147,24 @@ int main(int argc, char* argv[])
     cout << "Critical Points found (min sad max)" << cp[0] << " " << cp[1] << " " << cp[2] << " SUM: "<< numC << endl << endl;
 
 /////Uncomment for printing vtk files for the Forman gradient and the critical points
-    cout << "Writing Forman gradient on file: " << endl;
-    gradient.writeVTK_gradient("gradient.vtk");
-    cout << "- gradient.vtk" << endl;
-    gradient.writeVTK_criticalPoints("criticalPoints.vtk");
-    cout << "- criticalPoints.vtk" << endl << endl;
+//    cout << "Writing Forman gradient on file: " << endl;
+//    gradient.writeVTK_gradient("gradient.vtk");
+//    cout << "- gradient.vtk" << endl;
+//    gradient.writeVTK_criticalPoints("criticalPoints.vtk");
+//    cout << "- criticalPoints.vtk" << endl << endl;
 
-/////Uncomment for printing vtk files with the Descending Morse complex
-    cout << "Writing Morse features on file: " << endl;
-    gradient.descending_2cells_extraction(true);
-    cout << "- descending2cells.vtk" << endl;
-    gradient.descending_1cells_extraction(true);
-    cout << "- descending1cells.vtk" << endl;
+///////Uncomment for printing vtk files with the Descending Morse complex
+//    cout << "Writing Morse features on file: " << endl;
+//    gradient.descending_2cells_extraction(true);
+//    cout << "- descending2cells.vtk" << endl;
+//    gradient.descending_1cells_extraction(true);
+//    cout << "- descending1cells.vtk" << endl;
 
-/////Uncomment for printing vtk files with the Ascending Morse complex
-    gradient.ascending_2cells_extraction(true);
-    cout << "- ascending2cells.vtk" << endl;
-    gradient.ascending_1cells_extraction(true);
-    cout << "- ascending1cells.vtk" << endl;
+///////Uncomment for printing vtk files with the Ascending Morse complex
+//    gradient.ascending_2cells_extraction(true);
+//    cout << "- ascending2cells.vtk" << endl;
+//    gradient.ascending_1cells_extraction(true);
+//    cout << "- ascending1cells.vtk" << endl;
 
     return 0;
 }
@@ -127,7 +190,7 @@ void readInput(int argc, char** argv){
 
         segmFile = string(argv[par]);
         cout << "Segmentation method: " << segmFile << endl;
-        assert(segmFile == "immersion" || segmFile == "exp" || segmFile == "filter");
+        assert(segmFile == "immersion" || segmFile == "exp" || segmFile == "exp-improved" || segmFile == "filter");
     }
     cout << endl;
 }
