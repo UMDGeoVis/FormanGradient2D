@@ -7,7 +7,7 @@ CONFIG -= qt
 DESTDIR = dist/
 OBJECTS_DIR = build/
 
-TARGET = watershedToForman
+TARGET = FormanGradient2D
 
 QMAKE_CXXFLAGS_RELEASE += -fpermissive
 QMAKE_CXXFLAGS_DEBUG += -fpermissive

@@ -18,6 +18,7 @@ int main(int argc, char* argv[])
 
     Mesh mesh = Mesh();
 
+    //How to read an input mesh file
     readInput(argc, argv);
     if(meshFile.find(".tri") != string::npos)
         Reader::readMeshFile(mesh,meshFile);
@@ -34,22 +35,26 @@ int main(int argc, char* argv[])
     mesh.build(); //build the mesh structure
     cout << "Mesh with " << mesh.getNumVertex() << " vertices and " << mesh.getTopSimplexesNum() << "triangles [LOADED]" << endl;
 
+
+    //how to read a new scalar field
     if(fieldFile != "none"){
         Reader::readScalarField(mesh,fieldFile);
     }
 
     FormanGradientVector gradient = FormanGradientVector(&mesh);
+
+
     vector<int> segm;
     if(segmFile == "immersion"){
         time.start();
         //compute the watershed segmentation with a simulated immersion approach
         int nRegions = simulatedImmersionSegmentation(mesh,true,segm);
         cout << "Segmentation by Simulated immersion computed. " << nRegions << endl;
-        //compute the Forman gradient using the watershe segmentation
+        //compute the Forman gradient using the watershe segmentation from [Computing a Forman Gradient From a Watershed Decomposition, Comic et al, 2016]
         gradient.watershedToForman(segm);
     }
     else if(segmFile == "exp"){
-        //Greedy discrimination of flat regions
+        //Greedy discrimination of flat regions with Simulation of Simplicity from [Simulation of Simplicity, Edelsbrunner et al., 1990]
         map<double, vector<int> > vert;
         for(int i=0; i<mesh.getNumVertex(); i++){
             vert[mesh.getVertex(i).getF()].push_back(i);
@@ -67,7 +72,7 @@ int main(int argc, char* argv[])
 
     }
     else if(segmFile == "exp-improved"){
-        //Improved simulation of simplicity
+        //Improved simulation of simplicity from [Practical Considerations in Morse-Smale Complex Computation, Gyulassy et al. 2010]
 
         priority_queue<pair<int,float>, vector<pair<int,float> >, Comparer> simpleOrder;
         priority_queue<pair<int,float>, vector<pair<int,float> >, Comparer> bfsOrder;
