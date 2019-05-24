@@ -158,18 +158,18 @@ int main(int argc, char* argv[])
 //    gradient.writeVTK_criticalPoints("criticalPoints.vtk");
 //    cout << "- criticalPoints.vtk" << endl << endl;
 
-///////Uncomment for printing vtk files with the Descending Morse complex
-//    cout << "Writing Morse features on file: " << endl;
-//    gradient.descending_2cells_extraction(true);
-//    cout << "- descending2cells.vtk" << endl;
-//    gradient.descending_1cells_extraction(true);
-//    cout << "- descending1cells.vtk" << endl;
+/////Uncomment for printing vtk files with the Descending Morse complex
+   cout << "Writing Morse features on file: " << endl;
+   gradient.descending_2cells_extraction(true);
+   cout << "- descending2cells.vtk" << endl;
+   gradient.descending_1cells_extraction(true);
+   cout << "- descending1cells.vtk" << endl;
 
-///////Uncomment for printing vtk files with the Ascending Morse complex
-//    gradient.ascending_2cells_extraction(true);
-//    cout << "- ascending2cells.vtk" << endl;
-//    gradient.ascending_1cells_extraction(true);
-//    cout << "- ascending1cells.vtk" << endl;
+/////Uncomment for printing vtk files with the Ascending Morse complex
+   gradient.ascending_2cells_extraction(true);
+   cout << "- ascending2cells.vtk" << endl;
+   gradient.ascending_1cells_extraction(true);
+   cout << "- ascending1cells.vtk" << endl;
 
     return 0;
 }
@@ -199,5 +199,3 @@ void readInput(int argc, char** argv){
     }
     cout << endl;
 }
-
-

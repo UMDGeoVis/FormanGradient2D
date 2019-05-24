@@ -3,3 +3,6 @@
 *.pro.user
 
 Makefile
+dist/*
+.qmake.stash
+.DS_Store

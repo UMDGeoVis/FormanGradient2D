@@ -183,6 +183,17 @@ void FormanGradientVector::ascending_1cells_extraction(bool with_geometry){
                     vector<int> et = mesh->ET(*edge);
                     for(int j=0; j<et.size(); j++){
                         coda.push(et[j]);
+
+                        Vertex3D v1 = mesh->getVertex(mesh->getTopSimplex(et[j]).TV(0));
+                        v1 += mesh->getVertex(mesh->getTopSimplex(et[j]).TV(1));
+                        v1 += mesh->getVertex(mesh->getTopSimplex(et[j]).TV(2));
+                        v1 /= 3.0;
+
+                        Vertex3D ve = mesh->getVertex(edge->EV(0));
+                        ve += mesh->getVertex(edge->EV(1));
+                        ve /= 2.0;
+
+                        edges.insert(pair<Vertex3D,Vertex3D>(v1,ve));
                     }
 
                     while(!coda.empty()){
