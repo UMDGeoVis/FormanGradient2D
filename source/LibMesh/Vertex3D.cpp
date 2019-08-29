@@ -26,11 +26,11 @@ Vertex3D::Vertex3D(float x, float y, float z){
    this->vtstar = -1;
 }
 
-void Vertex3D::setF(float f){
+void Vertex3D::setF(double f){
     this->field = f;
 }
 
-float Vertex3D::getF() const{
+double Vertex3D::getF() const{
     return this->field;
 }
 

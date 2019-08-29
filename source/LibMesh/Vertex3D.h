@@ -20,12 +20,12 @@ public:
     float getX() const;
     float getY() const;
     float getZ() const;
-    float getF() const;
+    double getF() const;
     //
     void setX(float x);
     void setY(float y);
     void setZ(float z);
-    void setF(float f);
+    void setF(double f);
 
     ///Getter/Setter for partial VT* relation
     int VTstar() const;
@@ -63,11 +63,10 @@ private:
     ///A protected variable representing the z coordinate of the point
     float z;
     ///A protected variable representing the scalar value
-    float field;
+    double field;
 
 
     int vtstar;
 };
 
 #endif	/* _VERTEX3D_H */
-

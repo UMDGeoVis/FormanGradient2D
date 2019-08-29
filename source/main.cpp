@@ -55,17 +55,20 @@ int main(int argc, char* argv[])
     }
     else if(segmFile == "exp"){
         //Greedy discrimination of flat regions with Simulation of Simplicity from [Simulation of Simplicity, Edelsbrunner et al., 1990]
-        map<double, vector<int> > vert;
+
+        vector<pair<float,int> > allVerts(mesh.getNumVertex());
         for(int i=0; i<mesh.getNumVertex(); i++){
-            vert[mesh.getVertex(i).getF()].push_back(i);
+          allVerts[i] = pair<float,int>(mesh.getVertex(i).getF(),i);
         }
 
-        int count=0;
-        for(auto m : vert){
-            for(auto v : m.second){
-                mesh.getVertex(v).setF(count++);
-            }
+        sort(allVerts.begin(), allVerts.end());
+
+        double val = 0;
+        for(int i=0; i<allVerts.size(); i++){
+          mesh.getVertex(allVerts[i].second).setF(val);
+          val += 0.01;
         }
+
         time.start();
         //compute the Forman gradient via homotopty expansion
         gradient.homotopy_expansion();
